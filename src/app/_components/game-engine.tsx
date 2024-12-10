@@ -15,7 +15,6 @@ const defaultOptions: IBodyDefinition = {
 const GameEngine = () => {
   const engineRef = useRef<Matter.Engine | null>(null);
   const canvasRef = useRef(null);
-  const [scene, setScene] = useState<Matter.Render>();
 
   const [cubes, setCubes] = useState<Matter.Body[]>([]);
 
@@ -27,7 +26,7 @@ const GameEngine = () => {
       Math.random() * 100,
       {
         render: {
-          fillStyle: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+          fillStyle: `#${Math.random() > 0.5 ? "00FF00" : "FF0000"}`,
         },
       },
     );
@@ -102,8 +101,44 @@ const GameEngine = () => {
     ]);
     Render.run(render);
     Runner.run(runner, engine);
-    setScene(render);
   }, []);
+
+  useEffect(() => {
+    if (engineRef.current) {
+      Matter.Events.on(engineRef.current, "collisionStart", (event) => {
+        const pairs = event.pairs[0];
+        if (pairs) {
+          const bodyA = pairs.bodyA;
+          const bodyB = pairs.bodyB;
+          const bodyToDelete = redKillsGreen(bodyA, bodyB);
+          if (bodyToDelete && engineRef.current) {
+            Matter.Composite.remove(engineRef.current?.world, bodyToDelete);
+          }
+        }
+      });
+    }
+  }, []);
+
+  const redKillsGreen = (bodyA: Matter.Body, bodyB: Matter.Body) => {
+    //same color, no delete
+    if (bodyA.render.fillStyle === bodyB.render.fillStyle) {
+      return null;
+    }
+    //A red, kills green B
+    if (
+      bodyA.render.fillStyle === "#FF0000" &&
+      bodyB.render.fillStyle === "#00FF00"
+    ) {
+      return bodyB;
+    }
+    //B red, kills green A
+    if (
+      bodyA.render.fillStyle === "#00FF00" &&
+      bodyB.render.fillStyle === "#FF0000"
+    ) {
+      return bodyA;
+    }
+  };
 
   return (
     <div className="flex">
