@@ -16,7 +16,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
+      <body className="bg-gradient-to-r from-blue-500 to-purple-500">
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>
