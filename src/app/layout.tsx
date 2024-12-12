@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import EngineProvider from "./_context/engineContext";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -11,13 +12,20 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
+const gradientStyle = {
+  background:
+    "radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(194,249,187,1) 25%, rgba(154,209,212,1) 50%, rgba(194,249,187,1) 75%, rgba(255,255,255,1) 100%)",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body className="bg-gradient-to-r from-blue-500 to-purple-500">
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+    <html lang="en" className={`${GeistSans.variable} min-h-screen`}>
+      <body className="h-full" style={gradientStyle}>
+        <TRPCReactProvider>
+          <EngineProvider>{children}</EngineProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );
