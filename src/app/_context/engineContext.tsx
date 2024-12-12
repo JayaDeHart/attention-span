@@ -3,17 +3,17 @@
 import React, { createContext, type ReactNode } from "react";
 import { EngineController } from "./engineController";
 
-export const VideoContext = createContext<EngineController | null>(null);
+const controller = new EngineController();
+export const EngineContext = createContext<EngineController>(controller);
 
 interface StoreProviderProps {
   children: ReactNode;
 }
 
 export default function EngineProvider(props: StoreProviderProps) {
-  const controller = new EngineController();
   return (
-    <VideoContext.Provider value={controller}>
+    <EngineContext.Provider value={controller}>
       {props.children}
-    </VideoContext.Provider>
+    </EngineContext.Provider>
   );
 }

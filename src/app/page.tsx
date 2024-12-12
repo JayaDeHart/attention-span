@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { LatestPost } from "~/app/_components/post";
 import { api, HydrateClient } from "~/trpc/server";
-import GameEngine from "./_components/game-engine-test";
+import GameEngine from "./_components/game-engine";
 import Controls from "./_components/controls/controls";
 
 export default async function Home() {
