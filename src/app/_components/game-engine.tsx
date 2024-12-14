@@ -24,6 +24,8 @@ const GameEngine = () => {
     engineRef.current = engine;
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
+    controller.setEngine(engine);
+    controller.setRunner(runner);
     const render = Render.create({
       engine: engine,
       canvas: canvasRef.current!,

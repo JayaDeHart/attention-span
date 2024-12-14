@@ -15,10 +15,10 @@ export class EngineController {
     velocityIterations: number;
   };
   shape: string;
-  test: Matter.Body | null;
+  engine: Matter.Engine | null;
+  runner: Matter.Runner | null;
 
   constructor() {
-    // this.components = observable.map();
     this.components = [];
     this.width = 600;
     this.height = 600;
@@ -54,17 +54,20 @@ export class EngineController {
     };
 
     this.shape = "rectangle";
-    this.test = null;
+    this.engine = null;
+    this.runner = null;
 
     makeAutoObservable(this, {
       components: observable.shallow,
-      addComponent: action,
+      engine: observable.shallow,
     });
   }
 
   addComponent(component: Matter.Body) {
     this.components.push(component);
-    console.log(toJS(this.components));
+    if (this.engine) {
+      Matter.Composite.add(this.engine?.world, component);
+    }
   }
 
   getRandomPosition() {
@@ -73,5 +76,13 @@ export class EngineController {
 
   getComponents() {
     return toJS(this.components);
+  }
+
+  setEngine(engine: Matter.Engine) {
+    this.engine = engine;
+  }
+
+  setRunner(runner: Matter.Runner) {
+    this.runner = runner;
   }
 }
