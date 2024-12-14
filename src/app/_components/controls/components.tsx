@@ -26,8 +26,13 @@ import {
 } from "~/components/ui/select";
 
 import { Input } from "~/components/ui/input";
+import { Bodies } from "matter-js";
+import { useContext } from "react";
+import { EngineContext } from "~/app/_context/engineContext";
 
 const Components = () => {
+  const controller = useContext(EngineContext);
+
   const formSchema = z.object({
     // red green blue
     color: z.enum(["#FF0000", "#008000", "#0000FF"]),
@@ -49,6 +54,15 @@ const Components = () => {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // we gotta make it into a Matter.Bodies thingy and put it in the simulation
+    const [x, y] = controller.getRandomPosition();
+    const body = Bodies.rectangle(x!, y!, 50, 50, {
+      ...controller.defaultOptions,
+      render: {
+        fillStyle: values.color,
+      },
+    });
+
+    controller.addComponent(body);
     console.log(values);
   };
 
@@ -123,6 +137,11 @@ const Components = () => {
           <Button type="submit">Submit</Button>
         </form>
       </Form>
+      {controller.components.map((component) => (
+        <div key={component.id}>
+          <p>{component.id}</p>
+        </div>
+      ))}
     </div>
   );
 };

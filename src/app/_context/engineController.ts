@@ -1,8 +1,9 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, observable, toJS, action } from "mobx";
 import type { IBodyDefinition } from "matter-js";
 import Matter, { Bodies } from "matter-js";
 
 export class EngineController {
+  // components: Map<string, Matter.Body>;
   components: Matter.Body[];
   width: number;
   height: number;
@@ -14,8 +15,10 @@ export class EngineController {
     velocityIterations: number;
   };
   shape: string;
+  test: Matter.Body | null;
 
   constructor() {
+    // this.components = observable.map();
     this.components = [];
     this.width = 600;
     this.height = 600;
@@ -42,6 +45,7 @@ export class EngineController {
       render: {
         fillStyle: "#000000",
       },
+      force: { x: Math.random() * 0.01, y: Math.random() * 0.01 },
     };
     this.engineOptions = {
       gravity: { y: 0 },
@@ -50,11 +54,24 @@ export class EngineController {
     };
 
     this.shape = "rectangle";
+    this.test = null;
 
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      components: observable.shallow,
+      addComponent: action,
+    });
   }
 
   addComponent(component: Matter.Body) {
-    this.components = [...this.components, component];
+    this.components.push(component);
+    console.log(toJS(this.components));
+  }
+
+  getRandomPosition() {
+    return [Math.random() * this.width, Math.random() * this.height];
+  }
+
+  getComponents() {
+    return toJS(this.components);
   }
 }

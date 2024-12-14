@@ -7,19 +7,23 @@ import Matter, { Runner } from "matter-js";
 import { set } from "zod";
 
 const GameEngine = () => {
-  const { width, height, engineOptions, wallOptions, components, shape } =
+  const { width, height, engineOptions, wallOptions, shape } =
     useContext(EngineContext);
+  const controller = useContext(EngineContext);
   const canvasRef = useRef(null);
   const engineRef = useRef<Matter.Engine | null>(null);
+  const runnerRef = useRef<Matter.Runner | null>(null);
   const [run, setRun] = useState(false);
 
-  const container = useEffect(() => {
+  useEffect(() => {
     const Engine = Matter.Engine;
     const Render = Matter.Render;
     const Composite = Matter.Composite;
     const Bodies = Matter.Bodies;
     const engine = Engine.create({ ...engineOptions });
     engineRef.current = engine;
+    const runner = Matter.Runner.create();
+    runnerRef.current = runner;
     const render = Render.create({
       engine: engine,
       canvas: canvasRef.current!,
@@ -49,27 +53,34 @@ const GameEngine = () => {
     );
 
     const container = [floor, ceiling, rightWall, leftWall];
+    const [x, y] = controller.getRandomPosition();
+    const body = Bodies.rectangle(100, 100, 50, 50, {
+      ...controller.defaultOptions,
+      render: {
+        fillStyle: "#0000000",
+      },
+    });
 
-    Composite.add(engine.world, [...container, ...components]);
+    //we need to run the code that adds the components a) once and b) only after all components are added.
+
+    const ball = Bodies.circle(150, 10, 10, {
+      ...controller.defaultOptions,
+      force: { x: Math.random() * 0.01, y: Math.random() * 0.01 },
+    });
+
+    Composite.add(engine.world, [...container, body, ball]);
     Render.run(render);
-  }, [engineOptions, width, height, wallOptions, components]);
-
-  //load the components from the controller
-  //load the world from the controller
-  //set up the matterJS instance
-  //run it upon play button
+  }, [engineOptions, width, height, wallOptions, controller]);
 
   const toggleRunner = () => {
-    setRun(!run);
-    if (engineRef.current) {
-      const runner = Matter.Runner.create();
-      if (run) {
-        Runner.run(runner, engineRef.current);
-      }
+    if (engineRef.current && runnerRef.current) {
       if (!run) {
-        Runner.stop(runner);
+        Matter.Runner.run(runnerRef.current, engineRef.current);
+      } else {
+        Matter.Runner.stop(runnerRef.current);
       }
     }
+    setRun(!run);
   };
 
   return (
