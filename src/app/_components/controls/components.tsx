@@ -26,22 +26,28 @@ import {
 } from "~/components/ui/select";
 
 import { Input } from "~/components/ui/input";
-import { Bodies } from "matter-js";
-import { useContext } from "react";
+import Matter, { Bodies } from "matter-js";
+import { useContext, useState } from "react";
 import { EngineContext } from "~/app/_context/engineContext";
+import Component from "./component";
 
 const Components = () => {
   const controller = useContext(EngineContext);
+  const [component, setComponent] = useState<Matter.Body | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const formSchema = z.object({
     // red green blue
-    color: z.enum(["#FF0000", "#008000", "#0000FF"]),
+    color: z.string(),
     shape: z.enum(["rectangle"]),
     size: z
       .number()
       .max(5, { message: "Number must be between 1 and 5" })
       .min(1, { message: "Number must be between 1 and 5" }),
   });
+
+  //pro of zod is that we can define custom messages
+  //pro of using a type is that we can have 1 source of truth for the component types shared with everything
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,7 +58,7 @@ const Components = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const addComponent = (values: z.infer<typeof formSchema>) => {
     // we gotta make it into a Matter.Bodies thingy and put it in the simulation
     const [x, y] = controller.getRandomPosition();
     const body = Bodies.rectangle(x!, y!, 50, 50, {
@@ -66,11 +72,44 @@ const Components = () => {
     console.log(values);
   };
 
+  const updateComponent = (values: z.infer<typeof formSchema>) => {
+    if (component) {
+      controller.updateComponent(component.id, values);
+    }
+    form.reset();
+    setEditing(false);
+  };
+
+  console.log(component);
+
+  const setFormComponent = (component: Matter.Body) => {
+    setEditing(true);
+    setComponent(component);
+    const color = component.render.fillStyle;
+
+    form.reset({
+      color: color ?? "#0000FF",
+    });
+  };
+
+  const colorSelectMap = new Map([
+    ["Red", "#FF0000"],
+    ["Green", "#008000"],
+    ["Blue", "#0000FF"],
+  ]);
+
   return (
     <div>
       <h3>Add Elements</h3>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form
+          onSubmit={
+            editing
+              ? form.handleSubmit(updateComponent)
+              : form.handleSubmit(addComponent)
+          }
+          className="space-y-8"
+        >
           <FormField
             control={form.control}
             name="color"
@@ -87,9 +126,13 @@ const Components = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="#FF0000">Red</SelectItem>
-                    <SelectItem value="#008000">Green</SelectItem>
-                    <SelectItem value="#0000FF">Blue</SelectItem>
+                    {Array.from(colorSelectMap.entries()).map(
+                      ([name, value]) => (
+                        <SelectItem key={value} value={value}>
+                          {name}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </FormItem>
@@ -134,13 +177,15 @@ const Components = () => {
             )}
           />
 
-          <Button type="submit">Submit</Button>
+          <Button type="submit">{editing ? "Update" : "Add"}</Button>
         </form>
       </Form>
       {controller.components.map((component) => (
-        <div key={component.id}>
-          <p>{component.id}</p>
-        </div>
+        <Component
+          component={component}
+          key={component.id}
+          onClick={setFormComponent}
+        />
       ))}
     </div>
   );

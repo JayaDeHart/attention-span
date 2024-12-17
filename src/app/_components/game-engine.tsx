@@ -63,8 +63,6 @@ const GameEngine = () => {
       },
     });
 
-    //we need to run the code that adds the components a) once and b) only after all components are added.
-
     const ball = Bodies.circle(150, 10, 10, {
       ...controller.defaultOptions,
       force: { x: Math.random() * 0.01, y: Math.random() * 0.01 },

@@ -74,15 +74,21 @@ export class EngineController {
     return [Math.random() * this.width, Math.random() * this.height];
   }
 
-  getComponents() {
-    return toJS(this.components);
-  }
-
   setEngine(engine: Matter.Engine) {
     this.engine = engine;
   }
 
   setRunner(runner: Matter.Runner) {
     this.runner = runner;
+  }
+
+  updateComponent(id: number, values: { color: string }) {
+    //component basically has all the properties that we have to update our component with
+    //perhaps we modify the structure of how we store components to like put our own custom wrapper on top
+    //bootstrap it for nowsky
+    const updateComponent = this.components.find((c) => c.id === id);
+    if (updateComponent) {
+      updateComponent.render.fillStyle = values.color;
+    }
   }
 }
