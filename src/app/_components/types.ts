@@ -1,10 +1,10 @@
-export type Component = {
+export type ComponentValues = {
   color: Color;
   shape: Shape;
   size: number;
 };
 
-enum Color {
+export enum Color {
   Red = "#FF0000",
   Blue = "#0000FF",
   Yellow = "#FFFF00",
@@ -13,7 +13,7 @@ enum Color {
   White = "#FFFFFF",
 }
 
-enum Shape {
+export enum Shape {
   Circle = "circle",
   Square = "square",
 }

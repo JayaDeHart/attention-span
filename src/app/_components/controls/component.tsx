@@ -1,12 +1,13 @@
 import Matter from "matter-js";
 import { Card, CardHeader, CardTitle } from "~/components/ui/card";
+import { ComponentController } from "./componentController";
 type ComponentProps = {
-  component: Matter.Body;
-  onClick: (component: Matter.Body) => void;
+  component: ComponentController;
+  onClick: (component: ComponentController) => void;
 };
 
 const Component = (props: ComponentProps) => {
-  const { id } = props.component;
+  const { id } = props.component.body;
   return (
     <Card
       className="hover:cursor-pointer"

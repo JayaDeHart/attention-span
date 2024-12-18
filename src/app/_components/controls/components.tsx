@@ -29,67 +29,42 @@ import { Input } from "~/components/ui/input";
 import Matter, { Bodies } from "matter-js";
 import { useContext, useState } from "react";
 import { EngineContext } from "~/app/_context/engineContext";
+import { Color, ComponentValues, Shape } from "../types";
 import Component from "./component";
+import { ComponentController } from "./componentController";
 
 const Components = () => {
   const controller = useContext(EngineContext);
-  const [component, setComponent] = useState<Matter.Body | null>(null);
+  const [component, setComponent] = useState<ComponentController | null>(null);
   const [editing, setEditing] = useState(false);
 
-  const formSchema = z.object({
-    // red green blue
-    color: z.string(),
-    shape: z.enum(["rectangle"]),
-    size: z
-      .number()
-      .max(5, { message: "Number must be between 1 and 5" })
-      .min(1, { message: "Number must be between 1 and 5" }),
-  });
-
-  //pro of zod is that we can define custom messages
-  //pro of using a type is that we can have 1 source of truth for the component types shared with everything
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ComponentValues>({
     defaultValues: {
-      color: "#0000FF",
-      shape: "rectangle",
-      size: 1,
+      color: Color.Green,
+      shape: Shape.Square,
+      size: 50,
     },
   });
 
-  const addComponent = (values: z.infer<typeof formSchema>) => {
-    // we gotta make it into a Matter.Bodies thingy and put it in the simulation
-    const [x, y] = controller.getRandomPosition();
-    const body = Bodies.rectangle(x!, y!, 50, 50, {
-      ...controller.defaultOptions,
-      render: {
-        fillStyle: values.color,
-      },
-    });
-
-    controller.addComponent(body);
-    console.log(values);
+  const addComponent = (values: ComponentValues) => {
+    controller.addComponent(values);
+    form.reset();
+    setEditing(false);
   };
 
-  const updateComponent = (values: z.infer<typeof formSchema>) => {
+  const updateComponent = (values: ComponentValues) => {
     if (component) {
-      controller.updateComponent(component.id, values);
+      controller.updateComponent(component.body.id, values);
     }
     form.reset();
     setEditing(false);
   };
 
-  console.log(component);
-
-  const setFormComponent = (component: Matter.Body) => {
+  const setFormComponent = (component: ComponentController) => {
     setEditing(true);
     setComponent(component);
-    const color = component.render.fillStyle;
-
-    form.reset({
-      color: color ?? "#0000FF",
-    });
+    const values = component.values;
+    form.reset(values);
   };
 
   const colorSelectMap = new Map([
@@ -183,7 +158,7 @@ const Components = () => {
       {controller.components.map((component) => (
         <Component
           component={component}
-          key={component.id}
+          key={component.body.id}
           onClick={setFormComponent}
         />
       ))}
@@ -192,3 +167,8 @@ const Components = () => {
 };
 
 export default observer(Components);
+
+//TODO:
+// fix the errors in this component
+// fix the updatecomponent method in enginecontroller
+//test out the behavior

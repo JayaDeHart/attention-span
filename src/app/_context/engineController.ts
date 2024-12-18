@@ -1,10 +1,11 @@
 import { makeAutoObservable, observable, toJS, action } from "mobx";
 import type { IBodyDefinition } from "matter-js";
 import Matter, { Bodies } from "matter-js";
+import { ComponentController } from "../_components/controls/componentController";
+import { ComponentValues } from "../_components/types";
 
 export class EngineController {
-  // components: Map<string, Matter.Body>;
-  components: Matter.Body[];
+  components: ComponentController[];
   width: number;
   height: number;
   wallOptions: IBodyDefinition;
@@ -63,14 +64,15 @@ export class EngineController {
     });
   }
 
-  addComponent(component: Matter.Body) {
+  addComponent(values: ComponentValues) {
+    const component = new ComponentController(values, this.getRandomPosition());
     this.components.push(component);
     if (this.engine) {
-      Matter.Composite.add(this.engine?.world, component);
+      Matter.Composite.add(this.engine?.world, component.body);
     }
   }
 
-  getRandomPosition() {
+  getRandomPosition(): [number, number] {
     return [Math.random() * this.width, Math.random() * this.height];
   }
 
@@ -82,13 +84,10 @@ export class EngineController {
     this.runner = runner;
   }
 
-  updateComponent(id: number, values: { color: string }) {
-    //component basically has all the properties that we have to update our component with
-    //perhaps we modify the structure of how we store components to like put our own custom wrapper on top
-    //bootstrap it for nowsky
-    const updateComponent = this.components.find((c) => c.id === id);
+  updateComponent(id: number, values: ComponentValues) {
+    const updateComponent = this.components.find((c) => c.body.id === id);
     if (updateComponent) {
-      updateComponent.render.fillStyle = values.color;
+      updateComponent.updateValues(values);
     }
   }
 }
